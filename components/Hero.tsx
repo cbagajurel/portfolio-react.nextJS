@@ -52,7 +52,7 @@ const Hero = () => {
 
           <p className="mb-4 text-white text-sm md:text-lg lg:text-2xl text-center md:tracking-wider">
             Hi! I&apos;m CBA Gajurel, a Flutter & React Developer based in
-            Kathmandu, Nepal.
+            Kalanki, Kathmandu.
           </p>
 
           <a href="#about">

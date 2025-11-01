@@ -92,11 +92,11 @@ export function Globe({ globeConfig, data }: WorldProps) {
   };
 
   useEffect(() => {
-    if (globeRef.current) {
+    if (globeRef.current && data && data.length > 0) {
       _buildData();
       _buildMaterial();
     }
-  }, [globeRef.current]);
+  }, [data]);
 
   const _buildMaterial = () => {
     if (!globeRef.current) return;
@@ -107,10 +107,10 @@ export function Globe({ globeConfig, data }: WorldProps) {
       emissiveIntensity: number;
       shininess: number;
     };
-    globeMaterial.color = new Color(globeConfig.globeColor);
-    globeMaterial.emissive = new Color(globeConfig.emissive);
-    globeMaterial.emissiveIntensity = globeConfig.emissiveIntensity || 0.1;
-    globeMaterial.shininess = globeConfig.shininess || 0.9;
+    globeMaterial.color = new Color(defaultProps.globeColor);
+    globeMaterial.emissive = new Color(defaultProps.emissive);
+    globeMaterial.emissiveIntensity = defaultProps.emissiveIntensity || 0.1;
+    globeMaterial.shininess = defaultProps.shininess || 0.9;
   };
 
   const _buildData = () => {
@@ -119,19 +119,27 @@ export function Globe({ globeConfig, data }: WorldProps) {
     for (let i = 0; i < arcs.length; i++) {
       const arc = arcs[i];
       // Validate arc data to prevent NaN values
-      if (!arc || typeof arc.startLat !== 'number' || typeof arc.startLng !== 'number' || 
-          typeof arc.endLat !== 'number' || typeof arc.endLng !== 'number' ||
-          isNaN(arc.startLat) || isNaN(arc.startLng) || isNaN(arc.endLat) || isNaN(arc.endLng)) {
-        console.warn('Invalid arc data:', arc);
+      if (
+        !arc ||
+        typeof arc.startLat !== "number" ||
+        typeof arc.startLng !== "number" ||
+        typeof arc.endLat !== "number" ||
+        typeof arc.endLng !== "number" ||
+        isNaN(arc.startLat) ||
+        isNaN(arc.startLng) ||
+        isNaN(arc.endLat) ||
+        isNaN(arc.endLng)
+      ) {
+        console.warn("Invalid arc data:", arc);
         continue;
       }
-      
+
       const rgb = hexToRgb(arc.color) as { r: number; g: number; b: number };
       if (!rgb) {
-        console.warn('Invalid color:', arc.color);
+        console.warn("Invalid color:", arc.color);
         continue;
       }
-      
+
       points.push({
         size: defaultProps.pointSize,
         order: arc.order,
@@ -159,16 +167,19 @@ export function Globe({ globeConfig, data }: WorldProps) {
     );
 
     // Final validation to ensure no NaN values
-    const validPoints = filteredPoints.filter(point => 
-      !isNaN(point.lat) && !isNaN(point.lng) && 
-      isFinite(point.lat) && isFinite(point.lng)
+    const validPoints = filteredPoints.filter(
+      (point) =>
+        !isNaN(point.lat) &&
+        !isNaN(point.lng) &&
+        isFinite(point.lat) &&
+        isFinite(point.lng)
     );
 
     setGlobeData(validPoints);
   };
 
   useEffect(() => {
-    if (globeRef.current && globeData) {
+    if (globeRef.current && globeData && globeData.length > 0) {
       globeRef.current
         .hexPolygonsData(countries.features)
         .hexPolygonResolution(3)
@@ -187,11 +198,17 @@ export function Globe({ globeConfig, data }: WorldProps) {
     if (!globeRef.current || !globeData) return;
 
     // Filter data to ensure valid coordinates
-    const validData = data.filter(d => 
-      d && !isNaN(d.startLat) && !isNaN(d.startLng) && 
-      !isNaN(d.endLat) && !isNaN(d.endLng) &&
-      isFinite(d.startLat) && isFinite(d.startLng) && 
-      isFinite(d.endLat) && isFinite(d.endLng)
+    const validData = data.filter(
+      (d) =>
+        d &&
+        !isNaN(d.startLat) &&
+        !isNaN(d.startLng) &&
+        !isNaN(d.endLat) &&
+        !isNaN(d.endLng) &&
+        isFinite(d.startLat) &&
+        isFinite(d.startLng) &&
+        isFinite(d.endLat) &&
+        isFinite(d.endLng)
     );
 
     globeRef.current
@@ -213,7 +230,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
       .arcDashAnimateTime((e) => defaultProps.arcTime);
 
     globeRef.current
-      .pointsData(validData)
+      .pointsData(globeData)
       .pointColor((e) => (e as { color: string }).color)
       .pointsMerge(true)
       .pointAltitude(0.0)
@@ -234,7 +251,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
 
     const interval = setInterval(() => {
       if (!globeRef.current || !globeData) return;
-      
+
       // Use valid data length for rings calculation
       const validDataLength = Math.max(1, globeData.length);
       numbersOfRings = genRandomNumbers(
